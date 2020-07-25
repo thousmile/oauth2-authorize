@@ -1,0 +1,130 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>登录</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/login.css}">
+</head>
+
+<body>
+<div id="wrapper" class="login-page">
+    <div id="login_form" class="form">
+        <form class="login-form">
+            <input type="text" placeholder="用户名" id="user_name"/>
+            <input type="password" placeholder="密码" id="password"/>
+            <div class="code">
+                <input type="text" placeholder="验证码" id="code_text"/>
+                <img id="code_img">
+            </div>
+            <button id="login">登　录</button>
+            <p class="message">还没有账户? <a href="#">立刻创建</a></p>
+        </form>
+    </div>
+</div>
+
+<script src="http://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+<script th:inline="javascript">
+    // 验证码的 key
+    const codeKey = randomCodeKey();
+    // 客户端 ID
+    const clientId = [[${clientId}]];
+
+    // 校验登录
+    function check_login() {
+        let username = $("#user_name").val();
+        let password = $("#password").val();
+        let codeText = $("#code_text").val();
+        if (username.length >= 5 && password.length >= 5 && codeText.length === 4) {
+            let params = {
+                username: username,
+                password: password,
+                codeKey: codeKey,
+                codeText: codeText,
+            }
+            console.log('params :>> ', params);
+            $.ajax({
+                type: "POST",
+                url: "/authorize/login",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(params),
+                success: function (response) {
+                    if (response.status === 200) {
+                        window.location.href = `/authorize/login/success/callback?code=${response.data}&clientId=${clientId}`
+                    }
+                }
+            });
+        } else {
+            $("#login_form").removeClass('shake_effect');
+            setTimeout(function () {
+                $("#login_form").addClass('shake_effect')
+            }, 1);
+        }
+    }
+
+    // 校验注册
+    function check_register() {
+        let username = $("#r_user_name").val();
+        let password = $("#r_password").val();
+        let email = $("r_email").val();
+        if (username != "" && password == "" && email != "") {
+            let params = {
+                username: username,
+                password: password,
+                email: email
+            }
+            console.log('params :>> ', params);
+        } else {
+            $("#login_form").removeClass('shake_effect');
+            setTimeout(function () {
+                $("#login_form").addClass('shake_effect')
+            }, 1);
+        }
+    }
+
+    // 更新验证码
+    function check_code_img() {
+        let r = Math.ceil(Math.random() * 100);
+        let imageUrl = `/authorize/verify/code/${codeKey}?r=${r}`
+        $("#code_img").attr("src", imageUrl)
+    }
+
+    // 随机 生成 18位 字符串
+    function randomCodeKey() {
+        var s = []
+        var hexDigits = '0123456789abcdefghijklmnopqrstuvwxyz'
+        for (var i = 0; i < 24; i++) {
+            s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1)
+        }
+        s[14] = '4' // bits 12-15 of the time_hi_and_version field to 0010
+        s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1) // bits 6-7 of the clock_seq_hi_and_reserved to 01
+        return s.join('')
+    }
+
+    $(function () {
+        check_code_img();
+
+        $("#create").click(function () {
+            check_register();
+            return false;
+        })
+        $("#login").click(function () {
+            check_login();
+            return false;
+        })
+        $("#code_img").click(function () {
+            check_code_img();
+            return false;
+        })
+        $('.message a').click(function () {
+            $('form').animate({
+                height: 'toggle',
+                opacity: 'toggle'
+            }, 'slow');
+        });
+    })
+</script>
+</body>
+
+</html>
