@@ -9,23 +9,24 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * All rights Reserved, Designed By www.ifsaid.com
+ * All rights Reserved, Designed By 深圳市铭灏天智能照明设备有限公司
  * <p>
  * RESTful API 统一返回实体类
  * </p>
  *
- * @author Wang Chen Chen <932560435@qq.com>
- * @version 2.0
- * @date 2019/4/18 11:45
- * @copyright 2019 http://www.ifsaid.com/ Inc. All rights reserved.
+ * @author Wang Chen Chen
+ * @version 1.0
+ * @date 2021/7/5 9:31
+ * @copyright 2021 http://www.mhtled.com Inc. All rights reserved.
  */
-
 
 @Getter
 @Setter
 public class JsonResult<T> implements Serializable {
 
-    private static final long serialVersionUID = 1456468469856161L;
+    private static final int SUCCESS = 200;
+
+    private static final int FAIL = 100;
 
     /**
      * 返回状态码
@@ -66,14 +67,14 @@ public class JsonResult<T> implements Serializable {
     /**
      * 自定义返回状态码
      *
-     * @param httpStatus
+     * @param status
      * @param data
      * @return JsonResult
      * @author Wang Chen Chen<932560435@qq.com>
      * @date 2019/12/12 21:08
      */
-    private static <T> JsonResult result(HttpStatus httpStatus, T data) {
-        return result(httpStatus.status, httpStatus.value, data);
+    private static <T> JsonResult result(int status, T data) {
+        return result(status, "ok", data);
     }
 
     /**
@@ -98,46 +99,30 @@ public class JsonResult<T> implements Serializable {
      * @date 2019/12/12 21:08
      */
     public static <T> JsonResult success() {
-        return success(HttpStatus.SUCCESS.value, null);
+        return result(SUCCESS, "ok");
     }
-
-    /**
-     * 操作成功
-     *
-     * @param totalPage
-     * @param total
-     * @param list
-     * @author Wang Chen Chen<932560435@qq.com>
-     * @date 2019/12/12 21:08
-     */
-    public static <T> JsonResult success(int totalPage, long total, List<T> list) {
-        return success(new ResultPage<T>(totalPage, total, list));
-    }
-
 
     /**
      * 操作成功
      *
      * @param total
      * @param list
-     * @return JsonResult
      * @author Wang Chen Chen<932560435@qq.com>
      * @date 2019/12/12 21:08
      */
     public static <T> JsonResult success(long total, List<T> list) {
-        return success(new ResultPage<T>(list.size(), total, list));
+        return success(new ResultPage<T>(total, list));
     }
 
     /**
      * 操作成功
      *
-     * @param resultPage
-     * @return JsonResult
+     * @param page
      * @author Wang Chen Chen<932560435@qq.com>
      * @date 2019/12/12 21:08
      */
-    public static <T> JsonResult success(ResultPage<T> resultPage) {
-        return success(HttpStatus.SUCCESS.value, resultPage);
+    public static <T> JsonResult success(ResultPage<T> page) {
+        return result(SUCCESS, "ok", page);
     }
 
 
@@ -150,7 +135,7 @@ public class JsonResult<T> implements Serializable {
      * @date 2019/12/12 21:08
      */
     public static <T> JsonResult success(String message) {
-        return success(message, null);
+        return result(SUCCESS, message, null);
     }
 
     /**
@@ -162,7 +147,7 @@ public class JsonResult<T> implements Serializable {
      * @date 2019/12/12 21:08
      */
     public static <T> JsonResult success(T data) {
-        return success(HttpStatus.SUCCESS.value, data);
+        return result(SUCCESS, "ok", data);
     }
 
     /**
@@ -175,7 +160,7 @@ public class JsonResult<T> implements Serializable {
      * @date 2019/12/12 21:08
      */
     public static <T> JsonResult success(String message, T data) {
-        return result(HttpStatus.SUCCESS.status, message, data);
+        return result(SUCCESS, message, data);
     }
 
 
@@ -188,55 +173,28 @@ public class JsonResult<T> implements Serializable {
      * @date 2019/12/12 21:08
      */
     public static <T> JsonResult fail(String message) {
-        return result(HttpStatus.FAIL.status, message, null);
+        return result(FAIL, message, null);
+    }
+
+    /**
+     * 操作失败
+     *
+     * @author Wang Chen Chen<932560435@qq.com>
+     * @date 2019/12/12 21:08
+     */
+    public static <T> JsonResult fail() {
+        return result(FAIL, "fail", null);
     }
 
 
     /**
-     * 未授权
+     * 异常错误
      *
-     * @return JsonResult
      * @author Wang Chen Chen<932560435@qq.com>
      * @date 2019/12/12 21:08
      */
-    public static <T> JsonResult error401() {
-        return result(HttpStatus.UNAUTHORIZED.status, HttpStatus.UNAUTHORIZED.value, null);
-    }
-
-
-    /**
-     * 不支持的请求类型
-     *
-     * @return com.ifsaid.shark.util.JsonResult
-     * @author Wang Chen Chen<932560435@qq.com>
-     * @date 2019/12/12 21:08
-     */
-    public static <T> JsonResult error415() {
-        return result(HttpStatus.UNSUPPORTED_MEDIA_TYPE.status, HttpStatus.UNSUPPORTED_MEDIA_TYPE.value, null);
-    }
-
-
-    /**
-     * 404 未找到
-     *
-     * @return com.ifsaid.shark.util.JsonResult
-     * @author Wang Chen Chen<932560435@qq.com>
-     * @date 2019/12/12 21:08
-     */
-    public static <T> JsonResult error404() {
-        return result(HttpStatus.NOT_FOUND.status, HttpStatus.NOT_FOUND.value, null);
-    }
-
-
-    /**
-     * 服务器内部错误
-     *
-     * @return com.ifsaid.shark.util.JsonResult
-     * @author Wang Chen Chen<932560435@qq.com>
-     * @date 2019/12/12 21:08
-     */
-    public static <T> JsonResult error500() {
-        return result(HttpStatus.INTERNAL_SERVER_ERROR.status, HttpStatus.INTERNAL_SERVER_ERROR.value, null);
+    public static <T> JsonResult<String> error(int status, String message) {
+        return result(status, message, null);
     }
 
 
@@ -247,11 +205,6 @@ public class JsonResult<T> implements Serializable {
     public static class ResultPage<T> {
 
         /**
-         * 当前页，有多少条
-         */
-        private Integer totalPage;
-
-        /**
          * 总共，有多少条
          */
         private Long total;
@@ -260,83 +213,6 @@ public class JsonResult<T> implements Serializable {
          * 数据
          */
         private List<T> list;
-
-    }
-
-    /**
-     * restful api 返回状态码。不够的时候自己扩展
-     *
-     * @author Wang Chen Chen<932560435@qq.com>
-     * @return com.ifsaid.shark.util.JsonResult
-     * @date 2019/12/12 21:08
-     */
-    @Getter
-    public enum HttpStatus {
-
-        /**
-         * 正常 返回代码
-         *
-         * @author Wang Chen Chen<932560435@qq.com>
-         * @date 2019/12/12 21:08
-         */
-        SUCCESS(200, "操作成功"),
-
-        /**
-         * 错误 返回代码
-         *
-         * @author Wang Chen Chen<932560435@qq.com>
-         * @date 2019/12/12 21:08
-         */
-        FAIL(100, "操作失败"),
-
-        /**
-         * 参数检验失败 返回代码
-         *
-         * @author Wang Chen Chen<932560435@qq.com>
-         * @date 2019/12/12 21:08
-         */
-        VALIDATE_FAILED(304, "参数检验失败"),
-
-        /**
-         * 404 为找到
-         *
-         * @author Wang Chen Chen<932560435@qq.com>
-         * @date 2019/12/12 21:08
-         */
-        NOT_FOUND(404, "没有找到您需要的接口"),
-
-        /**
-         * 未经授权
-         *
-         * @author Wang Chen Chen<932560435@qq.com>
-         * @date 2019/12/12 21:08
-         */
-        UNAUTHORIZED(401, "你还没有经过授权认证"),
-
-        /**
-         * 不支持的媒体类型
-         *
-         * @author Wang Chen Chen<932560435@qq.com>
-         * @date 2019/12/12 21:08
-         */
-        UNSUPPORTED_MEDIA_TYPE(415, "不支持此请求类型！"),
-
-        /**
-         * 服务器内部错误 返回代码
-         *
-         * @author Wang Chen Chen<932560435@qq.com>
-         * @date 2019/12/12 21:08
-         */
-        INTERNAL_SERVER_ERROR(500, "服务器内部错误");
-
-        private int status;
-
-        private String value;
-
-        HttpStatus(int status, String value) {
-            this.status = status;
-            this.value = value;
-        }
 
     }
 

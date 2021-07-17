@@ -1,16 +1,17 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/oauth2_server?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=GMT%2B8
-    username: root
-    password: root
+    url: jdbc:mysql://${MYSQL_SERVER_ADDR:localhost}:${MYSQL_SERVER_PORT:3306}/oauth2_server?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=GMT%2B8
+    username: ${REDIS_SERVER_DATABASE:root}
+    password: ${REDIS_SERVER_DATABASE:root}
     platform: mysql
     type: com.zaxxer.hikari.HikariDataSource
 
   redis:
-    database: 1
-    host: localhost
-    port: 6379
+    database: ${REDIS_SERVER_DATABASE:1}
+    host: ${REDIS_SERVER_HOST:localhost}
+    port: ${REDIS_SERVER_PORT:6379}
+    # password: ${REDIS_SERVER_PASSWORD:6379}
     timeout: 2000
     lettuce:
       pool:
@@ -18,3 +19,4 @@ spring:
         min-idle: 0
         max-active: 8
         max-wait: -1ms
+

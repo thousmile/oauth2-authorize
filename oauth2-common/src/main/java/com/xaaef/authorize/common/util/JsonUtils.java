@@ -1,10 +1,8 @@
 package com.xaaef.authorize.common.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -12,10 +10,6 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
-
-import static com.xaaef.authorize.common.constant.DateTimeFormatConst.DEFAULT_DATE_TIME_PATTERN;
-import static com.xaaef.authorize.common.constant.DateTimeFormatConst.DEFAULT_DATE_PATTERN;
-import static com.xaaef.authorize.common.constant.DateTimeFormatConst.DEFAULT_TIME_PATTERN;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * All rights Reserved, Designed By www.ifsaid.com
+ * All rights Reserved, Designed By www.xaaef.com
  * <p>
  * jackson Json 工具类
  * </p>
@@ -37,11 +31,17 @@ import java.util.Map;
  * @author Wang Chen Chen <932560435@qq.com>
  * @version 2.0
  * @date 2019/4/18 11:45
- * @copyright 2019 http://www.ifsaid.com/ Inc. All rights reserved.
+ * @copyright 2019 http://www.xaaef.com/ Inc. All rights reserved.
  */
 
 @Slf4j
 public class JsonUtils {
+
+    public static final String DEFAULT_DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+
+    public static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd";
+
+    public static final String DEFAULT_TIME_PATTERN = "HH:mm:ss";
 
     private static final ObjectMapper MAPPER;
 

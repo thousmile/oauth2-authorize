@@ -1,0 +1,49 @@
+### 发送短信 验证码
+POST {{baseUrl}}/sms/send
+Content-Type: application/json
+
+{
+  "client_id": "nssbTtp5FO6NjZpUwP",
+  "mobile": "15071525233"
+}
+
+
+### 短信验证码 模式登录
+POST {{baseUrl}}/sms
+Content-Type: application/json
+
+{
+  "mobile": "15071525233",
+  "code": "1168",
+  "grant_type": "sms",
+  "client_id": "nssbTtp5FO6NjZpUwP",
+  "client_secret": "nssbTtp5FO6NjZpUwP"
+}
+
+> {%
+client.global.set("tokenValue", response.body.data.access_token);
+client.global.set("refreshToken", response.body.data.refresh_token);
+%}
+
+
+### 退出登录
+POST {{baseUrl}}/logout
+Content-Type: application/json
+Authorization: Bearer {{tokenValue}}
+
+
+### 获取登录的用户信息
+GET {{baseUrl}}/loginInfo
+Content-Type: application/json
+Authorization: Bearer {{tokenValue}}
+
+
+### 刷新 token
+POST {{baseUrl}}/refresh
+Content-Type: application/json
+refresh_token: Bearer {{refreshToken}}
+
+> {%
+client.global.set("tokenValue", response.body.data.access_token);
+client.global.set("refreshToken", response.body.data.refresh_token);
+%}

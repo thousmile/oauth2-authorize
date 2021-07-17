@@ -1,32 +1,32 @@
 package com.xaaef.authorize.server.controller;
 
-import com.xaaef.authorize.common.exception.Oauth2Exception;
-import com.xaaef.authorize.common.param.AuthorizationCodeModeParam;
-import com.xaaef.authorize.common.param.ClientModeParam;
-import com.xaaef.authorize.common.param.GetCodeModeParam;
-import com.xaaef.authorize.common.param.PasswordModeParam;
-import com.xaaef.authorize.common.token.OauthToken;
+import com.xaaef.authorize.common.exception.OAuth2Exception;
+import com.xaaef.authorize.common.token.OAuth2Token;
 import com.xaaef.authorize.common.util.JsonResult;
-import com.xaaef.authorize.common.util.VerifyCodeUtils;
-import com.xaaef.authorize.server.entity.UserInfo;
-import com.xaaef.authorize.server.param.LoginParam;
-import com.xaaef.authorize.server.service.AuthorizeService;
+import com.xaaef.authorize.common.util.JsonUtils;
+import com.xaaef.authorize.common.util.SecurityUtils;
+import com.xaaef.authorize.server.params.*;
+import com.xaaef.authorize.server.service.*;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.RedirectView;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
-
 
 /**
  * All rights Reserved, Designed By www.xaaef.com
@@ -42,15 +42,96 @@ import java.util.List;
 
 @Slf4j
 @Controller
-@RequestMapping("authorize")
+@AllArgsConstructor
 public class AuthorizeController {
 
-    private AuthorizeService authorizeService;
+    private ClientAuthorizeService clientAuthorizeService;
 
-    @Autowired
-    public AuthorizeController(AuthorizeService authorizeService) {
-        this.authorizeService = authorizeService;
+    private PasswordAuthorizeService passwordAuthorizeService;
+
+    private SmsAuthorizeService smsAuthorizeService;
+
+    private CaptchaCodesService captchaCodesService;
+
+    private AuthorizationCodeAuthorizeService codeAuthorizeService;
+
+    private TokenService tokenService;
+
+    /**
+     * 授权码模式，1.第三方应用，请求获取用户信息。在此校验客户端是否正确
+     *
+     * @author Wang Chen Chen<932560435@qq.com>
+     * @date 2020/7/23 14:08
+     */
+    @GetMapping("code")
+    public ModelAndView getCode(@Validated GetCodeModeParam param, BindingResult br) {
+        var result = new ModelAndView("paramError");
+        if (br.hasErrors()) {
+            result.addObject("errors", br.getFieldErrors());
+        }
+        log.info("getCode param: {}", JsonUtils.toJson(param));
+        try {
+            // 校验客户端是否存在！
+            // 一个随机的 授权ID，由系统随机生成，绑定给每个前来授权的第三方应用，
+            // 主要用来连贯用户一些列操作！
+            String codeId = codeAuthorizeService.validateClient(param);
+
+            result.addObject("codeId", codeId);
+
+            result.setViewName("login");
+        } catch (OAuth2Exception e) {
+            var oauth2Errors = List.of(
+                    new FieldError("OAuth2Exception", String.valueOf(e.getStatus()), e.getMessage())
+            );
+            result.addObject("errors", oauth2Errors);
+        }
+        return result;
     }
+
+    /**
+     * 授权码模式，第二步，用户登录
+     *
+     * @author Wang Chen Chen<932560435@qq.com>
+     * @date 2020/7/23 14:08
+     */
+    @PostMapping("login")
+    @ResponseBody
+    public JsonResult<String> login(@RequestBody @Validated LoginParam param, BindingResult br) {
+        if (br.hasErrors()) {
+            return JsonResult.fail(br.getFieldError().getDefaultMessage());
+        }
+        try {
+            // 回调 URL
+            String redirectUri = codeAuthorizeService.login(param);
+            // 让前端页面去跳转到 第三方应用
+            return JsonResult.success(null, redirectUri);
+        } catch (OAuth2Exception e) {
+            return JsonResult.error(e.getStatus(), e.getMessage());
+        }
+    }
+
+
+    /**
+     * 授权码模式，第三步，第三方应用通过 code 来换取 access_token
+     *
+     * @author Wang Chen Chen<932560435@qq.com>
+     * @date 2020/7/23 14:08
+     */
+    @PostMapping("access_token")
+    @ResponseBody
+    public JsonResult<String> authorizationCode(@RequestBody @Validated AuthorizationCodeModeParam param, BindingResult br) {
+        if (br.hasErrors()) {
+            return JsonResult.fail(br.getFieldError().getDefaultMessage());
+        }
+        log.info("authorizationCode param: {}", JsonUtils.toJson(param));
+        try {
+            var token = codeAuthorizeService.authorize(param);
+            return JsonResult.success(token);
+        } catch (OAuth2Exception e) {
+            return JsonResult.error(e.getStatus(), e.getMessage());
+        }
+    }
+
 
     /**
      * 客户端模式
@@ -65,8 +146,13 @@ public class AuthorizeController {
             String message = br.getFieldError().getDefaultMessage();
             return JsonResult.fail(message);
         }
-        log.info("param: {}", param);
-        return JsonResult.success();
+        log.info("client param: {}", JsonUtils.toJson(param));
+        try {
+            var token = clientAuthorizeService.authorize(param);
+            return JsonResult.success(token);
+        } catch (OAuth2Exception e) {
+            return JsonResult.error(e.getStatus(), e.getMessage());
+        }
     }
 
 
@@ -83,121 +169,107 @@ public class AuthorizeController {
             String message = br.getFieldError().getDefaultMessage();
             return JsonResult.fail(message);
         }
-        log.info("param: {}", param);
+        log.info("password param: {}", JsonUtils.toJson(param));
+        try {
+            var token = passwordAuthorizeService.authorize(param);
+            return JsonResult.success(token);
+        } catch (OAuth2Exception e) {
+            return JsonResult.error(e.getStatus(), e.getMessage());
+        }
+    }
+
+
+    /**
+     * 发送 短信验证码
+     *
+     * @author Wang Chen Chen<932560435@qq.com>
+     * @date 2020/7/23 14:08
+     */
+    @PostMapping("sms/send")
+    @ResponseBody
+    public JsonResult<String> sendSms(@RequestBody @Validated SendSmsParam param, BindingResult br) {
+        if (br.hasErrors()) {
+            String message = br.getFieldError().getDefaultMessage();
+            return JsonResult.fail(message);
+        }
+        log.info("send sms param: {}", JsonUtils.toJson(param));
+        try {
+            String code = smsAuthorizeService.sendSms(param.getClientId(), param.getMobile());
+            return JsonResult.success(code);
+        } catch (OAuth2Exception e) {
+            return JsonResult.error(e.getStatus(), e.getMessage());
+        }
+    }
+
+
+    /**
+     * 手机短信验证码 模式
+     *
+     * @author Wang Chen Chen<932560435@qq.com>
+     * @date 2020/7/23 14:08
+     */
+    @PostMapping("sms")
+    @ResponseBody
+    public JsonResult<String> sms(@RequestBody @Validated SmsModeParam param, BindingResult br) {
+        if (br.hasErrors()) {
+            String message = br.getFieldError().getDefaultMessage();
+            return JsonResult.fail(message);
+        }
+        log.info("sms param: {}", JsonUtils.toJson(param));
+        try {
+            var token = smsAuthorizeService.authorize(param);
+            return JsonResult.success(token);
+        } catch (OAuth2Exception e) {
+            return JsonResult.error(e.getStatus(), e.getMessage());
+        }
+    }
+
+
+    /**
+     * 刷新 token
+     *
+     * @author Wang Chen Chen<932560435@qq.com>
+     * @date 2020/7/23 14:08
+     */
+    @PostMapping("refresh")
+    @ResponseBody
+    public JsonResult<String> refreshToken(@RequestHeader("refresh_token") String refreshToken) {
+        if (StringUtils.isEmpty(refreshToken)) {
+            return JsonResult.fail("请求头中没有 refresh_token 参数！");
+        }
+        try {
+            var token = tokenService.refresh(refreshToken);
+            return JsonResult.success(token);
+        } catch (OAuth2Exception e) {
+            return JsonResult.error(e.getStatus(), e.getMessage());
+        }
+    }
+
+
+    /**
+     * 退出登录
+     *
+     * @author Wang Chen Chen<932560435@qq.com>
+     * @date 2020/7/23 14:08
+     */
+    @PostMapping("logout")
+    @ResponseBody
+    public JsonResult<String> logout() {
+        tokenService.logout();
         return JsonResult.success();
     }
 
 
     /**
-     * 授权码模式，第一步，第三方请求用户登录
+     * 获取用户信息
      *
      * @author Wang Chen Chen<932560435@qq.com>
      * @date 2020/7/23 14:08
      */
-    @GetMapping("code")
-    public ModelAndView getCode(@Validated GetCodeModeParam param, BindingResult br) {
-        var result = new ModelAndView("paramError");
-        if (br.hasErrors()) {
-            result.addObject("errors", br.getFieldErrors());
-        } else {
-            try {
-                authorizeService.checkAuthorizationCode(param);
-                result.addObject("clientId", param.getClientId());
-                result.setViewName("login");
-            } catch (Oauth2Exception e) {
-                var oauth2Errors = List.of(
-                        new FieldError("Oauth2Exception", String.valueOf(e.getStatus()), e.getMessage())
-                );
-                result.addObject("errors", oauth2Errors);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * 授权码模式，第二步，用户登录
-     *
-     * @author Wang Chen Chen<932560435@qq.com>
-     * @date 2020/7/23 14:08
-     */
-    @PostMapping("login")
+    @GetMapping("loginInfo")
     @ResponseBody
-    public JsonResult<String> login(@RequestBody @Validated LoginParam param, BindingResult br) {
-        if (br.hasErrors()) {
-            return JsonResult.fail(br.getFieldError().getDefaultMessage());
-        } else {
-            try {
-                String code = authorizeService.login(param);
-                return JsonResult.success(null, code);
-            } catch (Oauth2Exception e) {
-                return JsonResult.fail(e.getMessage());
-            }
-        }
-    }
-
-
-    /**
-     * 授权码模式，第三步，如果用户登录成功，回调到第三方应用
-     *
-     * @author Wang Chen Chen<932560435@qq.com>
-     * @date 2020/7/23 14:08
-     */
-    @GetMapping("/login/success/callback")
-    public ModelAndView loginSuccessCallback(String clientId, String code) {
-        var result = new ModelAndView("paramError");
-        try {
-            String redirectUri = authorizeService.builderRedirectUri(clientId, code);
-            log.info("redirectUri: {}", redirectUri);
-            result.setView(new RedirectView(redirectUri));
-            return result;
-        } catch (Oauth2Exception e) {
-            var oauth2Errors = List.of(
-                    new FieldError("Oauth2Exception", String.valueOf(e.getStatus()), e.getMessage())
-            );
-            result.addObject("errors", oauth2Errors);
-        }
-        return result;
-    }
-
-
-    /**
-     * 授权码模式，第四步  第三方通过 code 换取 token
-     *
-     * @author Wang Chen Chen<932560435@qq.com>
-     * @date 2020/7/23 14:08
-     */
-    @PostMapping("code")
-    @ResponseBody
-    public JsonResult<String> authorizationCode(@RequestBody @Validated AuthorizationCodeModeParam param,
-                                                BindingResult br) {
-        if (br.hasErrors()) {
-            String message = br.getFieldError().getDefaultMessage();
-            return JsonResult.fail(message);
-        }
-        try {
-            OauthToken oauthToken = authorizeService.authorizationCode(param);
-            return JsonResult.success(oauthToken);
-        } catch (Oauth2Exception e) {
-            return JsonResult.result(e.getStatus(), e.getMessage());
-        }
-    }
-
-
-    /**
-     * 授权码模式，第五步  第三方通过 第四步返回的 access_token 获取用户 ID
-     *
-     * @author Wang Chen Chen<932560435@qq.com>
-     * @date 2020/7/23 14:08
-     */
-    @PostMapping("userinfo")
-    @ResponseBody
-    public JsonResult<String> getUserInfo(@RequestAttribute("userId") String userId) {
-        try {
-            var userInfo = authorizeService.getUserInfo(userId);
-            return JsonResult.success(userInfo);
-        } catch (Oauth2Exception e) {
-            return JsonResult.result(e.getStatus(), e.getMessage());
-        }
+    public JsonResult<String> loginInfo() {
+        return JsonResult.success(SecurityUtils.getTokenValue());
     }
 
 
@@ -208,15 +280,15 @@ public class AuthorizeController {
      * @author Wang Chen Chen<932560435@qq.com>
      * @date 2020/7/23 14:08
      */
-    @GetMapping("/verify/code/{codeKey}")
-    public void imageVerifyCode(@PathVariable String codeKey, HttpServletResponse response) throws IOException {
+    @GetMapping("/captcha/codes/{codeKey}")
+    public void imageCaptchaCodes(@PathVariable String codeKey, HttpServletResponse response) throws IOException {
         // 设置响应的类型格式为图片格式
         response.setContentType("image/jpeg");
         // 禁止图像缓存。
         response.setHeader("Pragma", "no-cache");
         response.setHeader("Cache-Control", "no-cache");
         response.setDateHeader("Expires", 0);
-        BufferedImage image = authorizeService.generateVerifyCode(codeKey);
+        BufferedImage image = captchaCodesService.randomImageVerifyCode(codeKey);
         // 获取 图片 验证码
         ImageIO.write(image, "JPEG", response.getOutputStream());
     }

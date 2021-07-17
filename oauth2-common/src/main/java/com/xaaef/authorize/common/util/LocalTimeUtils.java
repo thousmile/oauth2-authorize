@@ -7,7 +7,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 /**
- * All rights Reserved, Designed By www.ifsaid.com
+ * All rights Reserved, Designed By www.xaaef.com
  * <p>
  * 时间工具类
  * </p>
@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter;
  * @author Wang Chen Chen <932560435@qq.com>
  * @version 2.0
  * @date 2019/4/18 11:45
- * @copyright 2019 http://www.ifsaid.com/ Inc. All rights reserved.
+ * @copyright 2019 http://www.xaaef.com/ Inc. All rights reserved.
  */
 
 

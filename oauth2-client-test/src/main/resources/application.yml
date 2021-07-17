@@ -1,0 +1,48 @@
+server:
+  port: 8087
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: oauth2-client-test
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: non_null
+  main:
+    allow-bean-definition-overriding: true
+
+  redis:
+    database: ${REDIS_SERVER_DATABASE:1}
+    host: ${REDIS_SERVER_HOST:localhost}
+    port: ${REDIS_SERVER_PORT:6379}
+    # password: ${REDIS_SERVER_PASSWORD:6379}
+    timeout: 2000
+    lettuce:
+      pool:
+        max-idle: 8
+        min-idle: 0
+        max-active: 8
+        max-wait: -1ms
+
+# OAuth2.0 Server 配置
+oauth2:
+  client:
+    exclude-path:
+      - "/hello"
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: ${spring.application.name}
+    version: 1.0.1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: ALWAYS

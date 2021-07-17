@@ -1,7 +1,7 @@
 package com.xaaef.authorize.common.util;
 
 /**
- * All rights Reserved, Designed By www.ifsaid.com
+ * All rights Reserved, Designed By www.xaaef.com
  * <p>
  * Twitter 的分布式雪花算法 SnowFlake 每秒自增生成26个万个可排序的ID
  * </p>
@@ -9,7 +9,7 @@ package com.xaaef.authorize.common.util;
  * @author Wang Chen Chen<932560435@qq.com>
  * @version 2.0
  * @date 2019/12/19 23:14
- * @copyright 2019 http://www.ifsaid.com/ Inc. All rights reserved.
+ * @copyright 2019 http://www.xaaef.com/ Inc. All rights reserved.
  */
 
 public class SnowFlakeUtils {

@@ -5,89 +5,157 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>登录</title>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/login.css}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        #box {
+            background: url("/img/loginBackground.jpg");
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            min-width: 1000px;
+            z-index: -10;
+            zoom: 1;
+            background-color: #fff;
+            background-repeat: no-repeat;
+            background-size: cover;
+            -webkit-background-size: cover;
+            -o-background-size: cover;
+            background-position: center 0;
+        }
+
+        .login {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .login_container {
+            padding: 20px 30px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .login_titles {
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 22px;
+            color: #eee;
+        }
+
+        .login_user {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .login_user img {
+            position: absolute;
+            height: 20px;
+            top: 50%;
+            left: 8px;
+            transform: translateY(-50%);
+        }
+
+        .login_user input {
+            outline: none;
+            border: none;
+            padding: 7px 0px 7px 35px;
+            width: 300px;
+            font-size: 18px;
+            opacity: 0.4;
+        }
+
+        .login_remenber input {
+            outline: none;
+            border: none;
+            opacity: 0.7;
+            vertical-align: middle;
+        }
+
+        .login_submit div {
+            cursor: pointer;
+            background: cadetblue;
+            opacity: 0.8;
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            height: 40px;
+            line-height: 40px;
+            margin: 10px 0;
+        }
+
+        .login_message div {
+            background: red;
+            opacity: 0.8;
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            height: 30px;
+            line-height: 30px;
+            margin: 10px 0;
+            display: none;
+            transition: 2s;
+        }
+
+        .login_message {
+            -webkit-animation: login_message 2s linear;
+            -moz-animation: login_message 2s linear;
+            animation: login_message 2s linear;
+        }
+
+        @-webkit-keyframes login_message { /*设置内容由显示变为隐藏*/
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+
+        }
+    </style>
 </head>
 
 <body>
-<div id="wrapper" class="login-page">
-    <div id="login_form" class="form">
-        <form class="login-form">
-            <input type="text" placeholder="用户名" id="user_name"/>
-            <input type="password" placeholder="密码" id="password"/>
-            <div class="code">
-                <input type="text" placeholder="验证码" id="code_text"/>
-                <img id="code_img">
-            </div>
-            <button id="login">登　录</button>
-            <p class="message">还没有账户? <a href="#">立刻创建</a></p>
-        </form>
+<div id="box"></div>
+<div class="login">
+    <div class="login_container">
+        <div class="login_titles">OAuth2.0 Server 登录页面</div>
+        <div class="login_message">
+            <div id="login_message">提示信息</div>
+        </div>
+        <div class="login_user">
+            <img src="./img/user.png">
+            <input id="username" type="text" placeholder="请输入用户名">
+        </div>
+        <div class="login_pwd login_user">
+            <img src="./img/pwd.png">
+            <input id="password" type="text" placeholder="请输入密码">
+        </div>
+        <div id="login" class="login_submit">
+            <div>登陆</div>
+        </div>
     </div>
 </div>
 
-<script src="http://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+<script th:src="@{/js/jquery.min.js}"></script>
 <script th:inline="javascript">
     // 验证码的 key
     const codeKey = randomCodeKey();
-    // 客户端 ID
-    const clientId = [[${clientId}]];
+    // 一个随机的 授权ID，由系统随机生成，绑定给每个前来授权的第三方应用，主要用来连贯用户一些列操作！
+    const codeId = [[${codeId}]];
+    let message = document.getElementById("login_message")
 
-    // 校验登录
-    function check_login() {
-        let username = $("#user_name").val();
-        let password = $("#password").val();
-        let codeText = $("#code_text").val();
-        if (username.length >= 5 && password.length >= 5 && codeText.length === 4) {
-            let params = {
-                username: username,
-                password: password,
-                codeKey: codeKey,
-                codeText: codeText,
-            }
-            console.log('params :>> ', params);
-            $.ajax({
-                type: "POST",
-                url: "/authorize/login",
-                contentType: "application/json; charset=utf-8",
-                data: JSON.stringify(params),
-                success: function (response) {
-                    if (response.status === 200) {
-                        window.location.href = `/authorize/login/success/callback?code=${response.data}&clientId=${clientId}`
-                    }
-                }
-            });
-        } else {
-            $("#login_form").removeClass('shake_effect');
-            setTimeout(function () {
-                $("#login_form").addClass('shake_effect')
-            }, 1);
-        }
-    }
-
-    // 校验注册
-    function check_register() {
-        let username = $("#r_user_name").val();
-        let password = $("#r_password").val();
-        let email = $("r_email").val();
-        if (username != "" && password == "" && email != "") {
-            let params = {
-                username: username,
-                password: password,
-                email: email
-            }
-            console.log('params :>> ', params);
-        } else {
-            $("#login_form").removeClass('shake_effect');
-            setTimeout(function () {
-                $("#login_form").addClass('shake_effect')
-            }, 1);
-        }
-    }
-
-    // 更新验证码
-    function check_code_img() {
-        let r = Math.ceil(Math.random() * 100);
-        let imageUrl = `/authorize/verify/code/${codeKey}?r=${r}`
-        $("#code_img").attr("src", imageUrl)
+    // 消息提示
+    function msg(show, color, txt) {
+        message.style.display = show;
+        message.style.background = color;
+        message.innerText = txt;
     }
 
     // 随机 生成 18位 字符串
@@ -103,26 +171,47 @@
     }
 
     $(function () {
-        check_code_img();
 
-        $("#create").click(function () {
-            check_register();
-            return false;
-        })
         $("#login").click(function () {
-            check_login();
-            return false;
+            let username = $("#username").val();
+            let password = $("#password").val();
+            let codeText = "dwad";
+            if (!username || !password) {
+                msg("block", "red", "用户名或密码为空");
+            }
+            if (username.length >= 3 && password.length >= 3) {
+                let params = {
+                    codeId: codeId,
+                    username: username,
+                    password: password,
+                    codeKey: codeKey,
+                    codeText: codeText,
+                }
+                console.log('params :>> ', params);
+                $.ajax({
+                    type: "POST",
+                    url: "/login",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(params),
+                    success: function (response) {
+                        if (response.status === 200) {
+                            location.href = response.data
+                        } else {
+                            msg("block", "red", response.message)
+                        }
+                    }
+                });
+            } else {
+                msg("block", "red", "用户名或密码长度不够！");
+            }
         })
+
         $("#code_img").click(function () {
-            check_code_img();
-            return false;
+            let r = Math.ceil(Math.random() * 100);
+            let imageUrl = `/captcha/codes/${codeKey}?r=${r}`
+            $("#code_img").attr("src", imageUrl)
         })
-        $('.message a').click(function () {
-            $('form').animate({
-                height: 'toggle',
-                opacity: 'toggle'
-            }, 'slow');
-        });
+
     })
 </script>
 </body>

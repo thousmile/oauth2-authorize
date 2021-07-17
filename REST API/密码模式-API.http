@@ -1,0 +1,39 @@
+### 密码模式登录
+POST {{baseUrl}}/password
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin",
+  "grant_type": "password",
+  "client_id": "7KutwpFgFXv0hcvkBO",
+  "client_secret": "7KutwpFgFXv0hcvkBO"
+}
+
+> {%
+client.global.set("tokenValue", response.body.data.access_token);
+client.global.set("refreshToken", response.body.data.refresh_token);
+%}
+
+
+### 退出登录
+POST {{baseUrl}}/logout
+Content-Type: application/json
+Authorization: Bearer {{tokenValue}}
+
+
+### 获取登录的用户信息
+GET {{baseUrl}}/loginInfo
+Content-Type: application/json
+Authorization: Bearer {{tokenValue}}
+
+
+### 刷新 token
+POST {{baseUrl}}/refresh
+Content-Type: application/json
+refresh_token: Bearer {{refreshToken}}
+
+> {%
+client.global.set("tokenValue", response.body.data.access_token);
+client.global.set("refreshToken", response.body.data.refresh_token);
+%}

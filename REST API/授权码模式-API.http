@@ -1,0 +1,42 @@
+## 授权码模式，构建授权 url 把下面这段 url 拿到浏览器执行，就可以获取到 code
+
+# http://localhost:8098/code?responseType=code&clientId=nssbTtp5FO6NjZpUwP&redirectUri=http://www.xaaef.com/getCode&scope=base_user&state=K2KpBc6cF00JkRZPd
+
+### 授权码 模式 通过 code 获取 access_token
+POST {{baseUrl}}/access_token
+Content-Type: application/json
+
+{
+  "code": "3024ba2dee2249a5aff0057cc455126f",
+  "grant_type": "authorization_code",
+  "client_id": "nssbTtp5FO6NjZpUwP",
+  "client_secret": "nssbTtp5FO6NjZpUwP"
+}
+
+> {%
+client.global.set("tokenValue", response.body.data.access_token);
+client.global.set("refreshToken", response.body.data.refresh_token);
+%}
+
+
+### 退出登录
+POST {{baseUrl}}/logout
+Content-Type: application/json
+Authorization: Bearer {{tokenValue}}
+
+
+### 获取登录的用户信息
+GET {{baseUrl}}/loginInfo
+Content-Type: application/json
+Authorization: Bearer {{tokenValue}}
+
+
+### 刷新 token
+POST {{baseUrl}}/refresh
+Content-Type: application/json
+refresh_token: Bearer {{refreshToken}}
+
+> {%
+client.global.set("tokenValue", response.body.data.access_token);
+client.global.set("refreshToken", response.body.data.refresh_token);
+%}

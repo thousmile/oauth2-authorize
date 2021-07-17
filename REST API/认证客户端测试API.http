@@ -1,0 +1,9 @@
+### 没有校验的地址
+GET {{baseUrl}}/hello
+Content-Type: application/json
+
+
+### 获取登录的用户信息
+GET {{baseUrl}}/index
+Content-Type: application/json
+Authorization: Bearer {{tokenValue}}

@@ -10,35 +10,28 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
     default-property-inclusion: non_null
+  main:
+    allow-bean-definition-overriding: true
 
   thymeleaf:
     cache: false
 
-# OAuth2.0 配置
+# OAuth2.0 Server 配置
 oauth2:
-  token-expired: 1800
-  exclude-path:
-    - "/authorize/client"
-    - "/authorize/password"
-    - "/authorize/code"
-    - "/authorize/login/**"
-    - "/authorize/login"
-    - "/authorize/verify/code/**"
-
-
-mybatis:
-  mapper-locations: classpath*:mappers/*.xml
-  type-aliases-package: com.xaaef.authorize.server.entity
-
-pagehelper:
-  helperDialect: mysql
-  reasonable: true
-  supportMethodsArguments: true
-  params: count=countSql
-
-logging:
-  level:
-    com.xaaef.authorize.server.mapper: debug
+  server:
+    exclude-path:
+      - "/tencent/*"                    # 腾讯社交平台(QQ和微信) 认证授权模式
+      - "/sms/*"                        # 手机短信验证码 模式接口
+      - "/client"                       # 客户端模式接口
+      - "/password"                     # 密码模式接口
+      - "/code"                         # 授权码模式，1.获取 code
+      - "/login"                        # 授权码模式，2.用户登录
+      - "/access_token"                 # 授权码模式，2.通过 code 获取 access_token
+      - "/captcha/codes/**"             # 验证码接口
+      - "/refresh"                      # 刷新 token
+      - "/login"                        # 刷新 token
+      - "/error"                        # 错误页面
+      - "/"                             # 首页
 
 info:
   app:

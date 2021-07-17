@@ -1,0 +1,38 @@
+### 客户端模式 登录
+POST {{baseUrl}}/client
+Content-Type: application/json
+
+{
+  "scope": "admin",
+  "grant_type": "client_credentials",
+  "client_id": "VIUvXZmVXmOFh1gYWK",
+  "client_secret": "VIUvXZmVXmOFh1gYWK"
+}
+
+> {%
+client.global.set("tokenValue", response.body.data.access_token);
+client.global.set("refreshToken", response.body.data.refresh_token);
+%}
+
+
+### 退出登录
+POST {{baseUrl}}/logout
+Content-Type: application/json
+Authorization: Bearer {{tokenValue}}
+
+
+### 获取登录的用户信息
+GET {{baseUrl}}/loginInfo
+Content-Type: application/json
+Authorization: Bearer {{tokenValue}}
+
+
+### 刷新 token
+POST {{baseUrl}}/refresh
+Content-Type: application/json
+refresh_token: Bearer {{refreshToken}}
+
+> {%
+client.global.set("tokenValue", response.body.data.access_token);
+client.global.set("refreshToken", response.body.data.refresh_token);
+%}
