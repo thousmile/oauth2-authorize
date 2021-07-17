@@ -27,7 +27,7 @@ import java.util.TimeZone;
 import static com.xaaef.authorize.common.util.JsonUtils.*;
 
 /**
- * All rights Reserved, Designed By www.ifsaid.com
+ * All rights Reserved, Designed By www.xaaef.com
  * <p>
  * redis 和 spring cache 配置
  * </p>
@@ -35,7 +35,7 @@ import static com.xaaef.authorize.common.util.JsonUtils.*;
  * @author Wang Chen Chen<932560435@qq.com>
  * @version 2.0
  * @date 2019/12/12 23:12
- * @copyright 2019 http://www.ifsaid.com/ Inc. All rights reserved.
+ * @copyright 2019 http://www.xaaef.com Inc. All rights reserved.
  */
 
 @Slf4j

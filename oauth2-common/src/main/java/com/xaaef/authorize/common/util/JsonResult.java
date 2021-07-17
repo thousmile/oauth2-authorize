@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * All rights Reserved, Designed By 深圳市铭灏天智能照明设备有限公司
+ * All rights Reserved, Designed By www.xaaef.com
  * <p>
  * RESTful API 统一返回实体类
  * </p>
@@ -17,7 +17,7 @@ import java.util.List;
  * @author Wang Chen Chen
  * @version 1.0
  * @date 2021/7/5 9:31
- * @copyright 2021 http://www.mhtled.com Inc. All rights reserved.
+ * @copyright 2021 http://www.xaaef.com Inc. All rights reserved.
  */
 
 @Getter

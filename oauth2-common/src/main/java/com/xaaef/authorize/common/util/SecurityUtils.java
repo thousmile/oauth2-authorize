@@ -12,7 +12,7 @@ import org.springframework.util.PathMatcher;
 import java.util.List;
 
 /**
- * All rights Reserved, Designed By 深圳市铭灏天智能照明设备有限公司
+ * All rights Reserved, Designed By www.xaaef.com
  * <p>
  * 安全服务工具类
  * </p>
@@ -20,7 +20,7 @@ import java.util.List;
  * @author Wang Chen Chen
  * @version 1.0
  * @date 2021/7/5 10:50
- * @copyright 2021 http://www.mhtled.com Inc. All rights reserved.
+ * @copyright 2021 http://www.xaaef.com Inc. All rights reserved.
  */
 
 public class SecurityUtils {

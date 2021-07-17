@@ -5,7 +5,7 @@ import com.xaaef.authorize.common.domain.TokenValue;
 import com.xaaef.authorize.common.exception.OAuth2Exception;
 
 /**
- * All rights Reserved, Designed By 深圳市铭灏天智能照明设备有限公司
+ * All rights Reserved, Designed By www.xaaef.com
  * <p>
  * 授权检查
  * </p>
@@ -13,7 +13,7 @@ import com.xaaef.authorize.common.exception.OAuth2Exception;
  * @author Wang Chen Chen
  * @version 1.0.1
  * @date 2021/7/13 13:41
- * @copyright 2021 http://www.mhtled.com Inc. All rights reserved.
+ * @copyright 2021 http://www.xaaef.com Inc. All rights reserved.
  */
 
 public interface AuthorizeService {

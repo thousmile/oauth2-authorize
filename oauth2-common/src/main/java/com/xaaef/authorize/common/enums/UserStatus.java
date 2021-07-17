@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 /**
- * All rights Reserved, Designed By 深圳市铭灏天智能照明设备有限公司
+ * All rights Reserved, Designed By www.xaaef.com
  * <p>
  * 状态 【0.禁用 1.正常 2.锁定 】
  * </p>
@@ -13,7 +13,7 @@ import lombok.ToString;
  * @author Wang Chen Chen
  * @version 1.0.1
  * @date 2021/7/12 13:53
- * @copyright 2021 http://www.mhtled.com Inc. All rights reserved.
+ * @copyright 2021 http://www.xaaef.com Inc. All rights reserved.
  */
 
 @Getter
